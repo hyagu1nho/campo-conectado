@@ -197,20 +197,23 @@ Versão desatualizada da stack: não. A versão instalada (Next.js 16.4.6, React
 
 | Passo | Trecho aproveitado | Análise crítica | Correções | Validação | Commit |
 |---|---|---|---|---|---|
-| 4.0 a 4.4 | `api.dart` (`ApiCampo`, falhas seladas, `descreverFalha`), `sessao.dart`, modelos com `fromJson` manual, telas de login, meus ensaios, ensaio, nova medição, nova falha e avaliação | Falhas como tipo selado; sessão Simplificada com o token em memória (a aula 20 usa `flutter_secure_storage`); o app só mostra o que a API devolve. Escrito sem compilador, então `flutter analyze` e `flutter test` foram a primeira validação real | Ajuste de estilo sugerido pelo lint; linhas repetidas removidas dos manifests do Android (permissão INTERNET e `usesCleartextTraffic`), que só um `flutter run` revelaria | `flutter analyze` e `flutter test` sem erros; execução em dispositivo em 26/11/2026 (Samsung SM M556B), com os registros feitos no app visíveis no web | `78b93c5`, `79aa312`, `46d23fe` |
+| 4.0 a 4.4 | `api.dart` (`ApiCampo`, falhas como subclasses de `FalhaDaApi`, `descreverFalha`), `sessao.dart`, modelos com `fromJson` manual, telas de login, meus ensaios, ensaio, nova medição, nova falha e avaliação | Falhas como subclasses de uma classe base; sessão Simplificada com o token em memória (a aula 20 usa `flutter_secure_storage`); o app só mostra o que a API devolve. Escrito sem compilador, então `flutter analyze` e `flutter test` foram a primeira validação real | Ajuste de estilo sugerido pelo lint; linhas repetidas removidas dos manifests do Android (permissão INTERNET e `usesCleartextTraffic`), que só um `flutter run` revelaria | `flutter analyze` e `flutter test` sem erros; execução em dispositivo em 26/11/2026 (Samsung SM M556B), com os registros feitos no app visíveis no web | `78b93c5`, `79aa312`, `46d23fe` |
 | Visual | `tema.dart`, `painel.dart`, lista com filtros, régua das leituras, Montserrat com a licença OFL | Reproduz as cores e a fonte do web; foi validado por análise e teste, e conferido na execução no aparelho | Nenhuma | `flutter analyze` e `flutter test` sem erros | `78b93c5` |
 
 Trecho representativo, de `lib/services/api.dart`:
 
 ```dart
-// toda falha vira um tipo selado, e a tela só mostra a mensagem
-sealed class FalhaDaApi implements Exception { const FalhaDaApi(); }
+// toda falha vira uma subclasse de FalhaDaApi, e a tela só mostra a mensagem
+class FalhaDaApi implements Exception { const FalhaDaApi(); }
+class SemConexao extends FalhaDaApi { const SemConexao(); }
 
-String descreverFalha(FalhaDaApi falha) => switch (falha) {
-  SemConexao() => 'Sem conexão com o servidor.',
-  ErroDaApi(status: 401) => 'Sua sessão expirou ou não é válida. Entre de novo.',
+String descreverFalha(FalhaDaApi falha) {
+  if (falha is SemConexao) return 'Sem conexão com o servidor.';
+  if (falha is ErroDaApi && falha.status == 401) {
+    return 'Sua sessão expirou ou não é válida. Entre de novo.';
+  }
   ...
-};
+}
 ```
 
 Versão desatualizada da stack: não, confirmado pelo `flutter analyze`. `DropdownButtonFormField.initialValue` e `Color.withValues` exigem Flutter 3.35 ou mais novo, por isso `sdk: ^3.9.0`.
@@ -335,7 +338,7 @@ O que ficou para a próxima etapa: o botão "voltar" do navegador, que não pass
 
 Período: de 23/11/2026 a 26/11/2026. Redigido por: Hyago, com apoio do Claude Code
 
-O que foi implementado: código dos passos 4.0 a 4.4: primeira chamada à API (`GET /saude`) na tela de login; login no nível Simplificada; meus ensaios; detalhe do ensaio com registros, devolução e pendências; nova medição; nova falha; avaliação da Pulverização com um critério por vez; envio. Testes com `MockClient` para o cliente da API, a sessão, as validações e a tela de login. Em casa, o `flutter analyze` foi rodado e um ajuste de estilo sugerido pelo lint foi aplicado. Em 24/11, o app recebeu o mesmo padrão visual do web (`lib/tema.dart`, `widgets/painel.dart` e a Montserrat em `assets/fontes/`). Depois, `flutter analyze` e `flutter test` passaram sem erros.
+O que foi implementado: código dos passos 4.0 a 4.4: primeira chamada à API (`GET /saude`) na tela de login; login no nível Simplificada; meus ensaios; detalhe do ensaio com registros, devolução e pendências; nova medição; nova falha; avaliação da Pulverização com um critério por vez (na Etapa 5 passou a ter um único botão para salvar); envio. Testes com `MockClient` para o cliente da API, a sessão, as validações e a tela de login. Em casa, o `flutter analyze` foi rodado e um ajuste de estilo sugerido pelo lint foi aplicado. Em 24/11, o app recebeu o mesmo padrão visual do web (`lib/tema.dart`, `widgets/painel.dart` e a Montserrat em `assets/fontes/`). Depois, `flutter analyze` e `flutter test` passaram sem erros.
 
 Decisões técnicas:
 
@@ -344,7 +347,7 @@ Decisões técnicas:
 | Sessão Simplificada (token em memória) | Completa, com `flutter_secure_storage` (aula 20); Simulada | Decisão do autor; login real sem guardar o token no aparelho | Fechar o app pede login de novo |
 | Pacote `http` com cliente injetável | `dio` | Padrão das aulas; permite testar com `MockClient` sem rede | Nenhum relevante |
 | `setState` nas telas e `ChangeNotifier` na sessão | Provider, Riverpod, Bloc | Suficiente para o escopo, como nas aulas | Nenhum relevante |
-| Falhas como classe selada (`SemConexao`, `TempoEsgotado`, `ErroDaApi`, `RespostaInesperada`) | Exceções genéricas | Cada tela mostra a mensagem certa, e o 401 volta ao login | Nenhum relevante |
+| Falhas como classes que estendem `FalhaDaApi` (`SemConexao`, `TempoEsgotado`, `ErroDaApi`, `RespostaInesperada`) | Exceções genéricas | Cada tela mostra a mensagem certa, e o 401 volta ao login | Nenhum relevante |
 | Endereço da API por `--dart-define` | `flutter_dotenv` (sugerido no README) | Sem dependência nova; padrão das aulas | Trocar o endereço exige rodar de novo |
 
 Mudanças no contrato da API:
@@ -353,7 +356,7 @@ Mudanças no contrato da API:
 |---|---|---|---|
 | (nenhum endpoint) | `CORS_ORIGIN` passou a aceitar uma lista separada por vírgula | Não se aplica | Não afeta o contrato |
 
-Dificuldades: o Flutter não executava na máquina de desenvolvimento inicial, então o código foi escrito sem compilar. O `flutter analyze` e o `flutter test` rodaram depois em outra máquina, sem erros, mas o emulador Android não iniciou de forma estável nela, e a execução do app em dispositivo só aconteceu em 26/11/2026, num celular Android físico por cabo USB. O `flutter run` compila e instala o app, mas a abertura automática falha com `MainActivity does not exist`; o app não tem ícone no aparelho e só é executado pelo `flutter run` no terminal. O manifest tem a activity e o filtro de abertura, então a causa não foi identificada até o fechamento. Os manifests do Android, gerados pelo `flutter create`, ficaram com linhas repetidas (a permissão INTERNET e o `usesCleartextTraffic`), que só um `flutter run` revelaria; foram corrigidos antes da execução.
+Dificuldades: o Flutter não executava na máquina de desenvolvimento inicial, então o código foi escrito sem compilar. O `flutter analyze` e o `flutter test` rodaram depois em outra máquina, sem erros, mas o emulador Android não iniciou de forma estável nela, e a execução do app em dispositivo só aconteceu em 26/11/2026, num celular Android físico por cabo USB. O `flutter run` compila e instala o app, mas a abertura automática falha com `MainActivity does not exist`; o app não tem ícone no aparelho e só é executado pelo `flutter run` no terminal. O manifest tem a activity e o filtro de abertura, então a causa não foi identificada até o fechamento. Os manifests do Android, gerados pelo `flutter create`, ficaram com linhas repetidas (a permissão INTERNET e o `usesCleartextTraffic`), que só um `flutter run` revelaria; foram corrigidos no commit `46d23fe`.
 
 O que ficou para a próxima etapa: a causa do erro de abertura automática do `flutter run`; a tela de abertura nativa do app (protótipo "App: abertura"), que depende das pastas geradas pelo `flutter create`.
 
@@ -363,7 +366,7 @@ O que ficou para a próxima etapa: a causa do erro de abertura automática do `f
 
 Período: 26/11/2026 (entrega final). Redigido por: Hyago
 
-O que foi ajustado para os três componentes conversarem: o contrato da API foi conferido contra os controllers do backend (caminhos, perfis, códigos de status, mensagens e limites de campo), sem divergências, e passou para a versão 1.3. Os testes do backend foram rodados de novo num clone limpo (59 unitários e 50 e2e), com lint e build sem erro no backend e no web. A ficha da linha Plantio foi ajustada: dosador Elétrico, até 91 linhas e capacidade de sementes obrigatória; como o formulário do web é montado pelos campos da API, a mudança apareceu nos clientes sem alterar o código deles. O cabeçalho e o espaçamento das telas do web foram melhorados (commits `fd3ae94` e `d1bfcf7`). Já estava preparado: o mesmo seed para os dois clientes, a mesma API e as mesmas unidades das grandezas nos dois. A demonstração de ponta a ponta, com o engenheiro no web e o analista no app em dispositivo, está pendente.
+O que foi ajustado para os três componentes conversarem: o contrato da API foi conferido contra os controllers do backend (caminhos, perfis, códigos de status, mensagens e limites de campo), sem divergências, e passou para a versão 1.3. Os testes do backend foram rodados de novo num clone limpo (59 unitários e 50 e2e), com lint e build sem erro no backend e no web. A ficha da linha Plantio foi ajustada: dosador Elétrico, até 91 linhas e capacidade de sementes obrigatória; como o formulário do web é montado pelos campos da API, a mudança apareceu nos clientes sem alterar o código deles. O cabeçalho e o espaçamento das telas do web foram melhorados (commits `fd3ae94` e `d1bfcf7`). Já estava preparado: o mesmo seed para os dois clientes, a mesma API e as mesmas unidades das grandezas nos dois. A demonstração de ponta a ponta foi gravada com o web e o app compilado para o navegador (vídeo da seção 7); o fluxo completo de devolução, reenvio e conclusão no aparelho não foi conferido.
 
 Inconsistências encontradas, e como foram resolvidas: os manifests do Android gerados pelo `flutter create` ficaram com linhas repetidas (a permissão INTERNET e o `usesCleartextTraffic`), corrigidas no commit `46d23fe`; no README, o `tsc` do web falhava num clone limpo porque o Next.js gera os tipos `PageProps` e `LayoutProps` no build, e a ordem dos comandos foi corrigida; a documentação falava em 15 modelos no `schema.prisma`, que tem 14, e foi corrigida. O app confere antes de enviar duas regras que a API também confere (justificativa quando o parecer não é Conforme e horímetro final não menor que o inicial); foi mantido como validação antecipada, e a API continua decidindo.
 
@@ -417,8 +420,8 @@ A sessão Simplificada vale para o app e nunca para a API: os endpoints continua
 
 | Aspecto | Web | Mobile | Consistente? |
 |---|---|---|---|
-| Tipos e modelos | Tipos TypeScript escritos à mão a partir do contrato, em `src/lib/<recurso>.ts` | Classes Dart com `fromJson` manual (padrões do Dart 3), em `lib/models/` | Sim: os dois seguem o contrato (versão 1.3), campo a campo; nenhum gera tipos automaticamente |
-| Tratamento de erro | Recusas `400`, `404` e `409` mostram os `detalhes` da API no topo do formulário; falha de rede ou `5xx` vira mensagem genérica | Classe selada `FalhaDaApi`; `descreverFalha` mostra os `detalhes` da API ou uma mensagem por tipo | Sim: as mensagens de regra vêm da API, iguais nos dois |
+| Tipos e modelos | Tipos TypeScript escritos à mão a partir do contrato, em `src/lib/<recurso>.ts` | Classes Dart com `fromJson` manual (leitura direta dos campos do JSON), em `lib/models/` | Sim: os dois seguem o contrato (versão 1.3), campo a campo; nenhum gera tipos automaticamente |
+| Tratamento de erro | Recusas `400`, `404` e `409` mostram os `detalhes` da API no topo do formulário; falha de rede ou `5xx` vira mensagem genérica | Classe `FalhaDaApi` com uma subclasse por tipo; `descreverFalha` mostra os `detalhes` da API ou uma mensagem por tipo | Sim: as mensagens de regra vêm da API, iguais nos dois |
 | `401` e `403` | Mensagem própria; a sessão vencida leva ao login | Em `401` a sessão é encerrada e o app volta ao login; `403` explica a falta de permissão | Sim |
 | Sessão | Completa: cookie HttpOnly, 1 hora, saída por POST | Simplificada: token em memória | Diverge por decisão: o nível do app foi escolhido e declarado (seção 4.3) |
 | Perfil aceito | Só o engenheiro; o analista é recusado no login | Só o analista; o engenheiro é recusado no login | Espelhado de propósito: cada cliente é de um perfil |
@@ -453,7 +456,7 @@ Faria commits ao longo do desenvolvimento, em vez de concentrar o histórico no 
 |---|---|
 | Backend | Prisma 7 exige o adaptador `@prisma/adapter-pg` e muda a configuração dos testes (Jest e imports dinâmicos); guards globais com `@Public` e `@Roles`; máquina de estados e regras como funções puras testadas; separar `400` (dado inválido) de `409` (conflito de estado) |
 | Web | Server Components e Server Actions mantêm o token no servidor (cookie HttpOnly); leituras com `cache: "no-store"` para dados de usuário; formulário dinâmico pela URL, sem buscar dados no navegador |
-| Mobile | Cliente HTTP injetável permite testar com `MockClient` sem rede; falhas como classe selada deixam cada tela mostrar a mensagem certa; sessão Simplificada com token em memória e volta ao login no `401` |
+| Mobile | Cliente HTTP injetável permite testar com `MockClient` sem rede; falhas como uma classe por tipo deixam cada tela mostrar a mensagem certa; sessão Simplificada com token em memória e volta ao login no `401` |
 | Integração e processo | Um contrato único e a regra no backend sustentam dois clientes diferentes sobre a mesma API; registrar prompt, análise e correção a cada passo; conferir a versão dos pacotes antes de aproveitar código gerado |
 
 ### 6.4 Autoavaliação
