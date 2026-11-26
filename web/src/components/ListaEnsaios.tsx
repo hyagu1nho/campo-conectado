@@ -23,11 +23,11 @@ export default function ListaEnsaios({
         <li key={ensaio.id}>
           <Link
             href={`/ensaios/${ensaio.id}`}
-            className="flex flex-col items-start gap-1 border-b border-borda-fina py-3 first:pt-0 hover:text-primaria"
+            className="flex flex-col items-start gap-1.5 border-b border-borda-fina py-4 first:pt-0 hover:text-primaria"
           >
             <SeloSituacao situacao={ensaio.situacao} />
-            <b className="font-semibold">{ensaio.objetivo}</b>
-            <span className="text-[13px] text-suave">
+            <b className="leading-snug font-semibold">{ensaio.objetivo}</b>
+            <span className="text-[13px] font-medium text-suave">
               {dataBrasileira(ensaio.dataPrevista)},{" "}
               {mostrar === "area" ? ensaio.area.nome : ensaio.maquina.modelo}
             </span>

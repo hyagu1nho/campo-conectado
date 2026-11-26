@@ -14,9 +14,9 @@ export default function Secao({
 }) {
   return (
     <section
-      className={`flex flex-col gap-4 rounded-lg border border-borda bg-superficie px-5 py-5 sm:px-6 ${className}`}
+      className={`flex flex-col gap-5 rounded-lg border border-borda bg-superficie px-5 py-5 sm:px-7 sm:py-6 ${className}`}
     >
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
+      <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-borda-fina pb-3.5">
         <h2 className={ESTILO_TITULO_SECAO}>{titulo}</h2>
         {contagem !== undefined && (
           <span className="text-sm text-suave">{contagem}</span>

@@ -50,10 +50,10 @@ export default async function Maquinas({
         acoes={<BotaoLink href="/maquinas/nova">Cadastrar máquina</BotaoLink>}
       />
 
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
         <Form
           action="/maquinas"
-          className="flex min-w-72 flex-[1_1_280px] gap-2"
+          className="flex min-w-72 max-w-md flex-[1_1_280px] gap-2"
         >
           {linha && <input type="hidden" name="linha" value={linha} />}
           <input

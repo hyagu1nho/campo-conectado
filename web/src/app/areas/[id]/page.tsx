@@ -23,8 +23,8 @@ function Dado({
 }) {
   return (
     <>
-      <dt className="text-suave">{rotulo}</dt>
-      <dd className="m-0 font-semibold">{children}</dd>
+      <dt className="text-sm font-medium text-suave">{rotulo}</dt>
+      <dd className="m-0 leading-snug font-semibold">{children}</dd>
     </>
   );
 }
@@ -54,7 +54,7 @@ export default async function DetalheArea({
       <div className="flex flex-wrap items-start gap-6">
         <div className="flex flex-[1_1_320px] flex-col gap-6">
           <Secao titulo="Dados da área">
-            <dl className="grid grid-cols-[8rem_minmax(0,1fr)] gap-x-4 gap-y-2.5">
+            <dl className="grid grid-cols-[8.5rem_minmax(0,1fr)] gap-x-4 gap-y-4">
               <Dado rotulo="Hectares">
                 {area.hectares === null
                   ? "-"

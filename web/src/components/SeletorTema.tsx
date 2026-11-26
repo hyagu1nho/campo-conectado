@@ -8,13 +8,8 @@ import {
   salvarModo,
   type ModoTema,
 } from "@/lib/tema";
-import { IconeLua, IconeMonitor, IconeSol } from "@/components/ui/Icones";
 
-const OPCOES: { modo: ModoTema; rotulo: string; Icone: typeof IconeSol }[] = [
-  { modo: "claro", rotulo: "Tema claro", Icone: IconeSol },
-  { modo: "sistema", rotulo: "Tema do sistema", Icone: IconeMonitor },
-  { modo: "escuro", rotulo: "Tema escuro", Icone: IconeLua },
-];
+const MODOS: ModoTema[] = ["claro", "sistema", "escuro"];
 
 /** Reage a mudanças feitas aqui, em outra aba ou no tema do sistema. */
 function assinar(avisar: () => void) {
@@ -44,13 +39,13 @@ const ROTULO_OPCAO: Record<ModoTema, string> = {
   escuro: "Escuro",
 };
 
-/** A mesma escolha em opções grandes, para a página da conta. */
+/** Escolha do tema da interface, na página da conta: claro, igual ao sistema ou escuro. */
 export function EscolhaTema() {
   const modo = useModo();
   return (
     <fieldset className="flex flex-wrap gap-3">
       <legend className="mb-2.5 text-sm text-suave">Tema da interface</legend>
-      {OPCOES.map(({ modo: opcao }) => {
+      {MODOS.map((opcao) => {
         const ativo = modo === opcao;
         return (
           <label
@@ -73,39 +68,5 @@ export function EscolhaTema() {
         );
       })}
     </fieldset>
-  );
-}
-
-/** Escolha do tema na barra de cima: claro, do sistema ou escuro. */
-export default function SeletorTema() {
-  const modo = useModo();
-
-  return (
-    <div
-      role="group"
-      aria-label="Tema da interface"
-      className="inline-flex overflow-hidden rounded border border-sobre-grafite-suave/30"
-    >
-      {OPCOES.map(({ modo: opcao, rotulo, Icone }) => {
-        const ativo = modo === opcao;
-        return (
-          <button
-            key={opcao}
-            type="button"
-            title={rotulo}
-            aria-label={rotulo}
-            aria-pressed={ativo}
-            onClick={() => salvarModo(opcao)}
-            className={`flex h-8 w-[34px] items-center justify-center transition-colors ${
-              ativo
-                ? "bg-sobre-grafite/15 text-sobre-grafite"
-                : "text-sobre-grafite-suave hover:text-sobre-grafite"
-            }`}
-          >
-            <Icone />
-          </button>
-        );
-      })}
-    </div>
   );
 }

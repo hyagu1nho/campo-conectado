@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Navegacao from "@/components/Navegacao";
-import SeletorTema from "@/components/SeletorTema";
 import { Logo } from "@/components/ui/Icones";
 import { obterUsuario } from "@/lib/sessao";
 
@@ -33,15 +32,8 @@ export default async function Cabecalho() {
           Campo Conectado
         </Link>
         <Navegacao
-          itens={[
-            ...itens,
-            {
-              href: "/perfil",
-              rotulo: usuario.nome.split(" ")[0],
-              direita: true,
-            },
-          ]}
-          tema={<SeletorTema />}
+          itens={itens}
+          conta={{ href: "/perfil", rotulo: usuario.nome.split(" ")[0] }}
         />
       </div>
     </header>

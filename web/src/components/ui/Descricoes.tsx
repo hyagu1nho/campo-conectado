@@ -8,7 +8,7 @@ export function Descricoes({
 }) {
   return (
     <dl
-      className={`grid gap-x-6 gap-y-4 rounded-lg border border-borda bg-superficie px-5 py-4 sm:grid-cols-2 ${colunas === 3 ? "lg:grid-cols-3" : ""}`}
+      className={`grid gap-x-8 gap-y-5 rounded-lg border border-borda bg-superficie px-5 py-5 sm:grid-cols-2 sm:px-7 sm:py-6 ${colunas === 3 ? "lg:grid-cols-3" : ""}`}
     >
       {children}
     </dl>
@@ -24,8 +24,8 @@ export function Descricao({
 }) {
   return (
     <div className="min-w-0">
-      <dt className="text-[13px] text-suave">{rotulo}</dt>
-      <dd className="font-semibold break-words">{children}</dd>
+      <dt className="mb-1 text-[13px] font-medium text-suave">{rotulo}</dt>
+      <dd className="leading-snug font-semibold break-words">{children}</dd>
     </div>
   );
 }

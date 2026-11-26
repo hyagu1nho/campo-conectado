@@ -20,7 +20,7 @@ export default function Pagina({
   return (
     <main
       aria-busy={ocupado}
-      className={`mx-auto flex w-full flex-1 flex-col gap-6 px-4 pt-7 pb-16 sm:px-8 ${LARGURAS[largura]} ${centralizar ? "justify-center" : ""}`}
+      className={`mx-auto flex w-full flex-1 flex-col gap-8 px-4 pt-10 pb-20 sm:px-8 ${LARGURAS[largura]} ${centralizar ? "justify-center" : ""}`}
     >
       {children}
     </main>

@@ -34,8 +34,9 @@ export const ESTILO_LINK =
 
 /** Cabeçalho e célula de tabela: caixa normal, linhas finas. */
 export const ESTILO_TH =
-  "border-b border-borda px-4 py-3 text-[13px] font-semibold text-suave";
-export const ESTILO_TD = "border-b border-borda-fina px-4 py-3.5 align-top";
+  "border-b border-borda px-5 py-3.5 text-[13px] font-semibold tracking-[0.01em] text-suave";
+export const ESTILO_TD =
+  "border-b border-borda-fina px-5 py-4 align-top leading-snug";
 
 /** Painel: papel sobre o aço, borda de 1 px e raio de 8 px. */
 export const ESTILO_PAINEL = "rounded-lg border border-borda bg-superficie";

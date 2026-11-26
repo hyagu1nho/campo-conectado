@@ -40,7 +40,7 @@ export default function FiltroLinha({
             key={rotulo}
             href={endereco(valor)}
             aria-current={ativo ? "page" : undefined}
-            className={`border-r border-borda px-3.5 py-2 text-sm whitespace-nowrap last:border-r-0 ${
+            className={`border-r border-borda px-4 py-2.5 text-sm whitespace-nowrap last:border-r-0 ${
               ativo
                 ? "bg-texto font-semibold text-superficie"
                 : "hover:bg-superficie-2"

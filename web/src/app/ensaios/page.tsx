@@ -20,18 +20,20 @@ function ItemEnsaio({ ensaio }: { ensaio: EnsaioResumo }) {
     <li>
       <Link
         href={`/ensaios/${ensaio.id}`}
-        className="flex flex-col border-b border-borda-fina px-3.5 py-3 hover:bg-superficie-2"
+        className="flex flex-col gap-0.5 border-b border-borda-fina px-4 py-4 hover:bg-superficie-2"
       >
-        <span className="text-sm leading-snug font-semibold">
+        <span className="mb-1 text-[15px] leading-snug font-semibold">
           {ensaio.objetivo}
         </span>
-        <span className="text-[13px] text-suave">
+        <span className="text-[13px] leading-snug font-semibold text-suave">
           {dataBrasileira(ensaio.dataPrevista)}
         </span>
-        <span className="text-[13px] text-suave">
+        <span className="text-[13px] leading-snug text-suave">
           {ensaio.maquina.modelo}, {ensaio.area.nome}
         </span>
-        <span className="text-[13px] text-suave">{ensaio.analista.nome}</span>
+        <span className="text-[13px] leading-snug text-suave">
+          {ensaio.analista.nome}
+        </span>
       </Link>
     </li>
   );
@@ -55,7 +57,7 @@ function Coluna({
     >
       <h2
         id={`coluna-${situacao}`}
-        className={`flex items-baseline justify-between gap-2 border-b border-borda-fina px-3.5 py-3 text-sm font-bold ${
+        className={`flex items-baseline justify-between gap-2 border-b border-borda-fina px-4 py-3.5 text-[15px] font-bold ${
           decisao ? "bg-aviso-fundo text-aviso-texto" : ""
         }`}
       >
@@ -65,7 +67,7 @@ function Coluna({
         </span>
       </h2>
       {ensaios.length === 0 ? (
-        <p className="px-3.5 py-3.5 text-[13px] text-suave">Nenhum ensaio.</p>
+        <p className="px-4 py-4 text-[13px] text-suave">Nenhum ensaio.</p>
       ) : (
         <ul className="[&>li:last-child>a]:border-b-0">
           {ensaios.map((ensaio) => (
@@ -108,7 +110,7 @@ export default async function Ensaios({ searchParams }: PageProps<"/ensaios">) {
         acoes={<BotaoLink href="/ensaios/novo">Planejar ensaio</BotaoLink>}
       />
       <FiltroLinha base="/ensaios" atual={linha} />
-      <div className="grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {colunas.map((coluna) => (
           <Coluna
             key={coluna.situacao}

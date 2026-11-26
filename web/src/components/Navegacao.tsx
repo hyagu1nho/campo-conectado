@@ -3,18 +3,24 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export type ItemNavegacao = { href: string; rotulo: string; direita?: boolean };
+export type ItemNavegacao = { href: string; rotulo: string };
 
 const BASE =
-  "border-b-[3px] px-3 pt-5 pb-[17px] text-[15px] whitespace-nowrap transition-colors";
+  "border-b-[3px] px-3 pt-5 pb-[17px] text-[15px] whitespace-nowrap transition-colors max-sm:pt-3 max-sm:pb-2.5";
 
-/** Links principais, com o da seção atual sublinhado em verde. */
+/**
+ * Links principais, com o da seção atual sublinhado em verde, e o link da
+ * conta à direita, separado por um traço. Em telas largas ficam na mesma
+ * linha do nome do sistema. Em telas estreitas a conta sobe para a linha do
+ * nome e os links principais ocupam a linha de baixo, com rolagem se
+ * não couberem.
+ */
 export default function Navegacao({
   itens,
-  tema,
+  conta,
 }: {
   itens: ItemNavegacao[];
-  tema: React.ReactNode;
+  conta: ItemNavegacao;
 }) {
   const caminho = usePathname();
   const link = ({ href, rotulo }: ItemNavegacao) => {
@@ -36,14 +42,20 @@ export default function Navegacao({
   };
 
   return (
-    <nav
-      aria-label="Principal"
-      className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto"
-    >
-      {itens.filter((i) => !i.direita).map(link)}
-      <span className="flex-1" />
-      <span className="mx-2">{tema}</span>
-      {itens.filter((i) => i.direita).map(link)}
-    </nav>
+    <>
+      <nav
+        aria-label="Principal"
+        className="order-3 flex w-full min-w-0 items-center gap-1 overflow-x-auto sm:order-2 sm:w-auto sm:flex-1"
+      >
+        {itens.map(link)}
+      </nav>
+      <div className="order-2 ml-auto flex shrink-0 items-center sm:order-3">
+        <span
+          aria-hidden="true"
+          className="mr-3 hidden h-6 w-px bg-sobre-grafite-suave/30 sm:block"
+        />
+        {link(conta)}
+      </div>
+    </>
   );
 }
