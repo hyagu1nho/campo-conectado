@@ -1,0 +1,32 @@
+name: mobile
+description: App do analista de validação do Campo Conectado.
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.5.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  # Montserrat, a mesma fonte do cliente web (licença em assets/fontes/OFL.txt).
+  fonts:
+    - family: Montserrat
+      fonts:
+        - asset: assets/fontes/Montserrat-Regular.ttf
+        - asset: assets/fontes/Montserrat-Medium.ttf
+          weight: 500
+        - asset: assets/fontes/Montserrat-SemiBold.ttf
+          weight: 600
+        - asset: assets/fontes/Montserrat-Bold.ttf
+          weight: 700
