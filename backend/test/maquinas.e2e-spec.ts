@@ -29,6 +29,7 @@ describe('Máquinas (e2e)', () => {
     numeroLinhas: 20,
     espacamentoLinhas: 45,
     sistemaDosador: 'Mecânico',
+    capacidadeSementes: 800,
   };
 
   beforeAll(async () => {

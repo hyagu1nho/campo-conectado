@@ -52,10 +52,10 @@ const CAMPOS_POR_LINHA: Record<Linha, CampoSeed[]> = {
     { chave: 'limiteTemperaturaHidraulico', rotulo: 'Limite de temperatura do sistema hidráulico', tipo: TipoCampo.NUMERO, unidade: '°C', minimo: 60, maximo: 100 },
   ],
   PLANTIO: [
-    { chave: 'numeroLinhas', rotulo: 'Número de linhas', tipo: TipoCampo.INTEIRO, minimo: 4, maximo: 60 },
+    { chave: 'numeroLinhas', rotulo: 'Número de linhas', tipo: TipoCampo.INTEIRO, minimo: 4, maximo: 91 },
     { chave: 'espacamentoLinhas', rotulo: 'Espaçamento entre linhas', tipo: TipoCampo.NUMERO, unidade: 'cm', minimo: 17, maximo: 100 },
-    { chave: 'sistemaDosador', rotulo: 'Sistema dosador', tipo: TipoCampo.OPCAO, opcoes: ['Pneumático', 'Mecânico'] },
-    { chave: 'capacidadeSementes', rotulo: 'Capacidade do depósito de sementes', tipo: TipoCampo.NUMERO, unidade: 'L', obrigatorio: false, minimo: 50, maximo: 5000 },
+    { chave: 'sistemaDosador', rotulo: 'Sistema dosador', tipo: TipoCampo.OPCAO, opcoes: ['Pneumático', 'Mecânico', 'Elétrico'] },
+    { chave: 'capacidadeSementes', rotulo: 'Capacidade do depósito de sementes', tipo: TipoCampo.NUMERO, unidade: 'L', minimo: 50, maximo: 5000 },
   ],
 };
 
@@ -165,6 +165,7 @@ async function main() {
     numeroLinhas: '20',
     espacamentoLinhas: '45',
     sistemaDosador: 'Pneumático',
+    capacidadeSementes: '800',
   });
   await prisma.campoAdicional.create({
     data: { maquinaId: plantadeira.id, nome: 'Marcador de linha', valor: 'Hidráulico' },
