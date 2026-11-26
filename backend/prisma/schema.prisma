@@ -1,0 +1,339 @@
+// Schema do Prisma 7 do Campo Conectado.
+// O cliente e gerado em src/generated/prisma (fora do Git) e importado pelo
+// PrismaService de '../generated/prisma/client', nunca de '@prisma/client'.
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "cjs"
+  importFileExtension = ""
+}
+
+// No Prisma 7 a URL de conexao fica no prisma7.config.ts, nao aqui.
+datasource db {
+  provider = "postgresql"
+}
+
+// =========================================================
+// Enums
+// =========================================================
+
+enum Perfil {
+  ENGENHEIRO
+  ANALISTA
+}
+
+/// Linha de atuador: define o formulario da ficha e o que o ensaio avalia.
+enum Linha {
+  DISTRIBUICAO
+  PULVERIZACAO
+  PLANTIO
+}
+
+/// Distribuicao: ARRASTO ou AUTOPROPELIDO. Pulverizacao: so AUTOPROPELIDO.
+/// Plantio: ARRASTO ou MONTADA. A combinacao e validada no service.
+enum TipoMaquina {
+  ARRASTO
+  AUTOPROPELIDO
+  MONTADA
+}
+
+enum TipoCampo {
+  TEXTO
+  NUMERO
+  INTEIRO
+  BOOLEANO
+  OPCAO
+}
+
+enum SituacaoEnsaio {
+  PLANEJADO
+  EM_ANDAMENTO
+  ENVIADO
+  DEVOLVIDO
+  CONCLUIDO
+}
+
+enum Grandeza {
+  TEMPERATURA_MOTOR
+  TEMPERATURA_HIDRAULICO
+  VELOCIDADE
+  CONSUMO_COMBUSTIVEL
+}
+
+enum Severidade {
+  CRITICA
+  MAIOR
+  MENOR
+}
+
+enum Criterio {
+  ESTABILIDADE_BARRAS
+  TEMPERATURA_MOTOR
+  TEMPERATURA_HIDRAULICO
+  DURABILIDADE
+  EFICIENCIA_CONCORRENTE
+  OPERACAO
+  MANUTENCAO
+}
+
+enum Parecer {
+  CONFORME
+  CONFORME_COM_RESSALVA
+  NAO_CONFORME
+}
+
+enum ParecerFinal {
+  APROVADA
+  APROVADA_COM_RESSALVA
+  REPROVADA
+}
+
+// =========================================================
+// Usuario (infraestrutura, nao conta como entidade de dominio)
+// =========================================================
+
+model Usuario {
+  id        Int      @id @default(autoincrement())
+  nome      String   @db.VarChar(120)
+  email     String   @unique @db.VarChar(180)
+  senhaHash String
+  perfil    Perfil
+  criadoEm  DateTime @default(now())
+
+  ensaiosPlanejados Ensaio[]    @relation("EnsaioEngenheiro")
+  ensaiosAtribuidos Ensaio[]    @relation("EnsaioAnalista")
+  devolucoes        Devolucao[]
+}
+
+// =========================================================
+// Cadastros do engenheiro
+// =========================================================
+
+model Area {
+  id           Int      @id @default(autoincrement())
+  nome         String   @unique @db.VarChar(120)
+  localizacao  String   @db.VarChar(200)
+  hectares     Decimal? @db.Decimal(10, 2)
+  tipoSolo     String?  @db.VarChar(80)
+  observacoes  String?
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  ensaios Ensaio[]
+}
+
+model Maquina {
+  id           Int         @id @default(autoincrement())
+  modelo       String      @db.VarChar(120)
+  numeroSerie  String      @unique @db.VarChar(60)
+  linha        Linha
+  tipo         TipoMaquina
+  criadoEm     DateTime    @default(now())
+  atualizadoEm DateTime    @updatedAt
+
+  valores          ValorCampo[]
+  camposAdicionais CampoAdicional[]
+  ensaios          Ensaio[]
+}
+
+/// Campo pre-pronto da ficha de uma linha. Vem do seed, sem tela de cadastro.
+model CampoModelo {
+  id          Int       @id @default(autoincrement())
+  linha       Linha
+  chave       String    @db.VarChar(60)
+  rotulo      String    @db.VarChar(120)
+  tipo        TipoCampo
+  unidade     String?   @db.VarChar(20)
+  obrigatorio Boolean   @default(true)
+  minimo      Decimal?  @db.Decimal(12, 3)
+  maximo      Decimal?  @db.Decimal(12, 3)
+  opcoes      String[]
+  ordem       Int
+
+  valores ValorCampo[]
+
+  @@unique([linha, chave])
+}
+
+/// Valor de um campo pre-pronto na ficha de uma maquina.
+/// Guardado como texto; a API valida tipo, faixa e opcoes pelo CampoModelo.
+model ValorCampo {
+  id            Int    @id @default(autoincrement())
+  maquinaId     Int
+  campoModeloId Int
+  valor         String @db.VarChar(200)
+
+  maquina     Maquina     @relation(fields: [maquinaId], references: [id], onDelete: Cascade)
+  campoModelo CampoModelo @relation(fields: [campoModeloId], references: [id], onDelete: Restrict)
+
+  @@unique([maquinaId, campoModeloId])
+  @@index([campoModeloId])
+}
+
+/// Campo livre incluido pelo engenheiro na ficha (ate 20 por maquina, regra no service).
+model CampoAdicional {
+  id        Int     @id @default(autoincrement())
+  maquinaId Int
+  nome      String  @db.VarChar(80)
+  valor     String  @db.VarChar(200)
+  unidade   String? @db.VarChar(20)
+
+  maquina Maquina @relation(fields: [maquinaId], references: [id], onDelete: Cascade)
+
+  @@unique([maquinaId, nome])
+}
+
+// =========================================================
+// Ensaio e seu ciclo de vida
+// =========================================================
+
+/// O ensaio e a propria atribuicao: maquina, area e analista responsavel.
+model Ensaio {
+  id           Int            @id @default(autoincrement())
+  objetivo     String         @db.VarChar(200)
+  maquinaId    Int
+  areaId       Int
+  engenheiroId Int
+  analistaId   Int
+  dataPrevista DateTime       @db.Date
+  situacao     SituacaoEnsaio @default(PLANEJADO)
+  enviadoEm    DateTime?
+  concluidoEm  DateTime?
+  criadoEm     DateTime       @default(now())
+  atualizadoEm DateTime       @updatedAt
+
+  maquina    Maquina @relation(fields: [maquinaId], references: [id], onDelete: Restrict)
+  area       Area    @relation(fields: [areaId], references: [id], onDelete: Restrict)
+  engenheiro Usuario @relation("EnsaioEngenheiro", fields: [engenheiroId], references: [id], onDelete: Restrict)
+  analista   Usuario @relation("EnsaioAnalista", fields: [analistaId], references: [id], onDelete: Restrict)
+
+  medicoes     Medicao[]
+  falhas       Falha[]
+  devolucoes   Devolucao[]
+  testeBandeja TesteBandeja?
+  avaliacao    AvaliacaoPulverizacao?
+
+  @@index([maquinaId])
+  @@index([areaId])
+  @@index([engenheiroId])
+  @@index([analistaId, situacao])
+}
+
+/// Historico das devolucoes do engenheiro ao analista.
+model Devolucao {
+  id         Int      @id @default(autoincrement())
+  ensaioId   Int
+  autorId    Int
+  comentario String
+  criadoEm   DateTime @default(now())
+
+  ensaio Ensaio  @relation(fields: [ensaioId], references: [id], onDelete: Cascade)
+  autor  Usuario @relation(fields: [autorId], references: [id], onDelete: Restrict)
+
+  @@index([ensaioId])
+  @@index([autorId])
+}
+
+// =========================================================
+// Dados registrados pelo analista no app
+// =========================================================
+
+model Medicao {
+  id           Int      @id @default(autoincrement())
+  ensaioId     Int
+  grandeza     Grandeza
+  valor        Decimal  @db.Decimal(10, 3)
+  horimetro    Decimal? @db.Decimal(10, 1)
+  observacao   String?
+  registradaEm DateTime @default(now())
+
+  ensaio Ensaio @relation(fields: [ensaioId], references: [id], onDelete: Cascade)
+
+  @@index([ensaioId, grandeza])
+}
+
+model Falha {
+  id         Int        @id @default(autoincrement())
+  ensaioId   Int
+  descricao  String
+  componente String?    @db.VarChar(120)
+  severidade Severidade
+  horimetro  Decimal?   @db.Decimal(10, 1)
+  ocorridaEm DateTime   @default(now())
+
+  ensaio Ensaio @relation(fields: [ensaioId], references: [id], onDelete: Cascade)
+
+  @@index([ensaioId])
+}
+
+// =========================================================
+// Distribuicao: teste de bandeja (prioridade Media)
+// =========================================================
+
+/// Parametros do teste. Dose media, desvio, CV e diferenca para a dose alvo
+/// sao calculados pela API e nunca gravados vindos do cliente.
+model TesteBandeja {
+  id                 Int      @id @default(autoincrement())
+  ensaioId           Int      @unique
+  produto            String?  @db.VarChar(120)
+  doseAlvo           Decimal  @db.Decimal(10, 3) // kg/ha
+  larguraFaixa       Decimal  @db.Decimal(6, 2) // m
+  espacamentoBandeja Decimal  @db.Decimal(6, 2) // m
+  areaBandeja        Decimal  @db.Decimal(8, 4) // m2
+  limiteCv           Decimal  @default(10) @db.Decimal(5, 2) // %
+  criadoEm           DateTime @default(now())
+  atualizadoEm       DateTime @updatedAt
+
+  ensaio  Ensaio          @relation(fields: [ensaioId], references: [id], onDelete: Cascade)
+  coletas ColetaBandeja[]
+}
+
+model ColetaBandeja {
+  id             Int     @id @default(autoincrement())
+  testeBandejaId Int
+  posicao        Decimal @db.Decimal(6, 2) // m em relacao ao centro da maquina
+  massa          Decimal @db.Decimal(10, 3) // g
+
+  testeBandeja TesteBandeja @relation(fields: [testeBandejaId], references: [id], onDelete: Cascade)
+
+  @@unique([testeBandejaId, posicao])
+}
+
+// =========================================================
+// Pulverizacao: avaliacao por parecer de conformidade (central do MVP)
+// =========================================================
+
+/// Dados objetivos de contexto e parecer final. As evidencias (temperatura
+/// maxima x limite da ficha, falhas por severidade, diferenca para a
+/// concorrente) sao calculadas pela API.
+model AvaliacaoPulverizacao {
+  id                    Int           @id @default(autoincrement())
+  ensaioId              Int           @unique
+  velocidade            Decimal?      @db.Decimal(6, 2) // km/h
+  terreno               String?       @db.VarChar(120)
+  horimetroInicial      Decimal?      @db.Decimal(10, 1)
+  horimetroFinal        Decimal?      @db.Decimal(10, 1)
+  capacidadeOperacional Decimal?      @db.Decimal(8, 2) // ha/h
+  capacidadeConcorrente Decimal?      @db.Decimal(8, 2) // ha/h
+  parecerFinal          ParecerFinal?
+  justificativaFinal    String?
+  criadoEm              DateTime      @default(now())
+  atualizadoEm          DateTime      @updatedAt
+
+  ensaio    Ensaio             @relation(fields: [ensaioId], references: [id], onDelete: Cascade)
+  criterios CriterioAvaliado[]
+}
+
+/// Um parecer por criterio. Justificativa obrigatoria fora de CONFORME (regra no service).
+model CriterioAvaliado {
+  id            Int      @id @default(autoincrement())
+  avaliacaoId   Int
+  criterio      Criterio
+  parecer       Parecer
+  justificativa String?
+
+  avaliacao AvaliacaoPulverizacao @relation(fields: [avaliacaoId], references: [id], onDelete: Cascade)
+
+  @@unique([avaliacaoId, criterio])
+}
