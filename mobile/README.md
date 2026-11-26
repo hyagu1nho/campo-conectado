@@ -2,28 +2,23 @@
 
 App mobile do analista de validação: ver os ensaios atribuídos, registrar medições e falhas, preencher a avaliação da Pulverização e enviar ao engenheiro.
 
-> **Estado:** o código de `lib/` e `test/` foi escrito sem um Flutter instalado (na máquina de desenvolvimento o PowerShell, que o Flutter usa, é bloqueado por política). Nenhum comando abaixo foi executado ainda. Rode-os numa máquina com Flutter e corrija o que `flutter analyze` e `flutter test` apontarem.
+Estado: o código de `lib/` e `test/` foi escrito antes de haver um Flutter configurado. Depois, `flutter analyze` e `flutter test` rodaram sem erros. Em 26/11/2026 o app foi executado num Samsung SM M556B, por cabo USB, e os registros feitos nele apareceram no cliente web. O `flutter run` instala o app, mas a abertura automática falha com `MainActivity does not exist`; o app não tem ícone no aparelho e só é executado pelo `flutter run` no terminal.
 
 ## Primeira vez nesta pasta
 
-As pastas `android/` e `ios/` não estão no repositório; o `flutter create` gera só o que falta e **não sobrescreve** `lib/`, `test/`, `pubspec.yaml` nem este README.
+A pasta `android/` já está no repositório, gerada pelo `flutter create`, com a permissão de internet no manifest principal e o `usesCleartextTraffic` de debug (HTTP sem TLS, só em desenvolvimento). A pasta `ios/` não foi gerada. Se precisar dela, o `flutter create` gera só o que falta e não sobrescreve `lib/`, `test/`, `pubspec.yaml` nem este README:
 
 ```bash
 cd mobile
-flutter create . --org br.edu.campoconectado --platforms android,ios --project-name mobile
+flutter create . --org br.edu.campoconectado --platforms ios --project-name mobile
 flutter pub get
 ```
 
-Depois, no `android/app/src/main/AndroidManifest.xml`, antes de `<application`:
+Para só Android, basta:
 
-```xml
-<uses-permission android:name="android.permission.INTERNET"/>
-```
-
-E no `android/app/src/debug/AndroidManifest.xml`, dentro de `<manifest>` (HTTP sem TLS só em desenvolvimento):
-
-```xml
-<application android:usesCleartextTraffic="true"/>
+```bash
+cd mobile
+flutter pub get
 ```
 
 ## Ícone do app
@@ -67,6 +62,7 @@ Com a API no ar (`npm run start:dev` em `backend/`):
 | Onde o app roda | Comando |
 |---|---|
 | Emulador Android | `flutter run --dart-define=API_URL=http://10.0.2.2:3000` |
+| Celular por cabo USB, com a depuração ativa | `adb reverse tcp:3000 tcp:3000`, depois `flutter run --dart-define=API_URL=http://localhost:3000` |
 | Celular na mesma rede | `flutter run --dart-define=API_URL=http://<ip-do-computador>:3000` |
 
 Trocar o `API_URL` exige rodar de novo (hot reload não basta). A tela de login mostra se a API respondeu (`GET /saude`).
