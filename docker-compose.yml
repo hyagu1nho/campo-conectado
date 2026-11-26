@@ -13,7 +13,7 @@
 services:
   db:
     image: postgres:18
-    container_name: projeto-db
+    container_name: campo-conectado-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: app
@@ -21,8 +21,10 @@ services:
       POSTGRES_DB: appdb
     ports:
       - "5432:5432"
+    # A partir da imagem 18, os dados ficam em /var/lib/postgresql/18/docker.
+    # O volume e montado no diretorio pai, e nao mais em /var/lib/postgresql/data.
     volumes:
-      - dados-postgres:/var/lib/postgresql/data
+      - dados-postgres:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U app -d appdb"]
       interval: 5s
